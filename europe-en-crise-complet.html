@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Europe en Crise - Jeu de Stratégie Géopolitique</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    }
+    
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    header {
+      background-color: #1e3a8a;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      z-index: 10;
+    }
+    
+    .game-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .round-badge {
+      background-color: #2563eb;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-weight: 500;
+    }
+    
+    .player-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .notification-area {
+      position: fixed;
+      top: 4.5rem;
+      right: 1.5rem;
+      z-index: 100;
+      width: 20rem;
+      max-width: 90%;
+    }
+    
+    .notification {
+      background-color: #dbeafe;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      border-radius: 0.375rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      animation: slide-in 0.3s ease;
+    }
+    
+    @keyframes slide-in {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    .notification svg {
+      margin-right: 0.5rem;
+      flex-shrink: 0;
+    }
+    
+    .container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    
+    .map-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      overflow: hidden;
+    }
+    
+    .card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .map-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .map-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .map-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+    
+    .btn {
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      border: none;
+      transition: all 0.2s;
+    }
+    
+    .btn-blue {
+      background-color: #2563eb;
+      color: white;
+    }
+    
+    .btn-blue:hover {
+      background-color: #1d4ed8;
+      transform: translateY(-1px);
+    }
+    
+    .btn-blue:active {
+      transform: translateY(0);
+    }
+    
+    .btn-sm {
+      padding: 0.25rem 0.75rem;
+      font-size: 0.875rem;
+    }
+    
+    .btn-lg {
+      padding: 0.75rem 1.5rem;
+      width: 100%;
+    }
+    
+    .map-view {
+      position: relative;
+      background-color: #e0f2fe;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      flex: 1;
+    }
+    
+    .map-view {
+      height: 100%;
+      min-height: 300px;
+    }
+    
+    .map-svg-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .map-inner {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .map-expanded-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .country-details {
+      padding: 1rem;
+      background-color: #f8fafc;
+      border-radius: 0.5rem;
+      border: 1px solid #e2e8f0;
+    }
+    
+    .country-title {
+      font-size: 1.125rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    
+    .stat-item {
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+    }
+    
+    .stat-label {
+      font-weight: 500;
+      margin-right: 0.5rem;
+    }
+    
+    .stat-value-high {
+      color: #16a34a;
+      font-weight: 500;
+    }
+    
+    .stat-value-mid-high {
+      color: #ca8a04;
+      font-weight: 500;
+    }
+    
+    .stat-value-mid-low {
+      color: #ea580c;
+      font-weight: 500;
+    }
+    
+    .stat-value-low {
+      color: #dc2626;
+      font-weight: 500;
+    }
+    
+    .action-btn-container {
+      padding: 0 1rem 1rem;
+    }
+    
+    .info-panel {
+      width: 350px;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 1rem 1rem 0;
+      overflow: hidden;
+    }
+    
+    .current-player-card {
+      margin-bottom: 1rem;
+      flex-shrink: 0;
+    }
+    
+    .events-card {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+    
+    .events-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    
+    .events-list-container {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+    }
+    
+    .events-list {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+    
+    .event-item {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .event-item.recent {
+      border-left: 4px solid #3b82f6;
+      padding-left: 0.5rem;
+      background-color: #f0f9ff;
+    }
+    
+    .event-text {
+      margin-bottom: 0.25rem;
+    }
+    
+    .recent-tag {
+      font-size: 0.75rem;
+      color: #2563eb;
+      font-weight: 500;
+    }
+    
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 100;
+      animation: fade-in 0.2s ease;
+    }
+    
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      padding: 1.5rem;
+      max-width: 42rem;
+      width: 100%;
+      animation: scale-in 0.2s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    @keyframes scale-in {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: #1e3a8a;
+    }
+    
+    .modal-desc {
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+    
+    .choices-list {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .choice-btn {
+      width: 100%;
+      text-align: left;
+      padding: 1rem;
+      background-color: #f1f5f9;
+      border-radius: 0.5rem;
+      border: 1px solid #e2e8f0;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .choice-btn:hover {
+      background-color: #dbeafe;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .choice-text {
+      font-weight: 500;
+    }
+    
+    .choice-effect {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    /* Pour les pays sur la carte SVG */
+    .country {
+      cursor: pointer;
+      transition: all 0.3s;
+      stroke-width: 1;
+    }
+    
+    .country:hover {
+      opacity: 0.9;
+      transform: scale(1.02);
+      transform-origin: center;
+      stroke-width: 2;
+      stroke: #ffffff;
+      filter: brightness(1.2);
+    }
+    
+    .country-active {
+      stroke-width: 2;
+      stroke: #ffffff;
+      filter: brightness(1.2);
+    }
+    
+    /* Scrollbar styling */
+    .events-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    
+    .events-list::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 4px;
+    }
+    
+    .events-list::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 4px;
+    }
+    
+    .events-list::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+
+    /* Nouvelle disposition flexbox pour la carte et les détails du pays */
+    .map-content-flex {
+      display: flex;
+      gap: 1rem;
+      height: 100%;
+    }
+    
+    .map-view {
+      flex: 2;
+      min-width: 0;
+    }
+    
+    .country-details {
+      flex: 1;
+      min-width: 250px;
+      max-width: 350px;
+      margin-top: 0 !important;
+      display: block !important;
+      overflow-y: auto;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+      
+      .info-panel {
+        width: 100%;
+        padding: 0 1rem 1rem;
+      }
+      
+      .events-card {
+        height: 300px;
+      }
+      
+      .map-content-flex {
+        flex-direction: column;
+      }
+      
+      .country-details {
+        max-width: 100%;
+      }
+    }
+/* Add these styles to your existing CSS */
+
+/* Make the body use flex with min-height to ensure proper layout */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Ensure the container takes up available space */
+.container {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Position the action button container for mobile */
+@media (max-width: 768px) {
+  .action-btn-container {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 50;
+  }
+  
+  /* Make sure there's padding at the bottom of the container for scrolling */
+  .info-panel {
+    padding-bottom: 4rem;
+  }
+  
+  /* Ensure button text wraps properly */
+  .btn-lg {
+    white-space: normal;
+    height: auto;
+    padding: 0.75rem;
+  }
+}
+/* Add these styles to fix the map visibility on mobile */
+
+/* Ensure the map container gets proper height on mobile */
+@media (max-width: 768px) {
+  /* Give the map view a specific height on mobile */
+  .map-view {
+    height: 350px;
+    min-height: 350px;
+    width: 100%;
+  }
+  
+  /* Make sure the SVG container fills the available space */
+  .map-svg-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+  }
+  
+  /* Ensure the map content takes up space */
+  .map-content-flex {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  /* Make sure the map card has enough room for the map */
+  .map-card {
+    min-height: 450px;
+  }
+  
+  /* Keep the country details panel at a reasonable height */
+  .country-details {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  /* Adjust the container to handle overflow properly */
+  .container {
+    overflow-y: auto;
+    height: auto;
+    padding-bottom: 1rem;
+  }
+}
+  </style>
+</head>
+<body>
+  <header id="game-header">
+    <h1 class="game-title">Europe en Crise</h1>
+    <div class="header-info">
+      <span class="round-badge">Tour: <span id="round-number">1</span></span>
+      <div class="player-info">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 22V12a10 10 0 1 1 20 0v10"></path>
+          <path d="M2 15h20"></path>
+        </svg>
+        <span>Joueur actuel: <span id="current-player-name">Premier Ministre Britannique</span></span>
+      </div>
+    </div>
+  </header>
+  
+  <div id="notification-area" class="notification-area"></div>
+  
+  <div class="container">
+    <div class="map-container">
+      <!-- Carte normale -->
+      <div class="card map-card">
+        <div class="map-header">
+          <h2 class="map-title">Carte de l'Europe</h2>
+        </div>
+        <div class="map-content-flex">
+          <div id="map-view" class="map-view normal">
+            <div class="map-svg-container">
+              <svg viewBox="0 0 800 600" width="100%" height="100%">
+                <!-- Fond de carte -->
+                <rect x="0" y="0" width="800" height="600" fill="#e6f7ff" />
+                
+                <!-- Europe Occidentale -->
+                <path d="M350 250 L300 300 L320 350 L380 380 L430 340 L410 290 Z" fill="#e8e8e8" stroke="#cccccc" stroke-width="2" />
+                
+                <!-- France -->
+                <g id="france" class="country">
+                  <path d="M320 350 L300 400 L350 430 L380 380 Z" fill="#002654" stroke="#000" stroke-width="1" opacity="0.7" />
+                  <text x="340" y="390" fill="white" font-weight="bold" font-size="14px" pointer-events="none">FR</text>
+                </g>
+                
+                <!-- Allemagne -->
+                <g id="germany" class="country">
+                  <path d="M380 380 L430 340 L470 380 L400 420 Z" fill="#FFCC00" stroke="#000" stroke-width="1" opacity="0.7" />
+                  <text x="410" y="380" fill="white" font-weight="bold" font-size="14px" pointer-events="none">DE</text>
+                </g>
+                
+                <!-- UK -->
+                <g id="uk" class="country">
+                  <path d="M300 300 L250 280 L270 240 L330 250 Z" fill="#1d70b8" stroke="#000" stroke-width="1" opacity="0.7" />
+                  <text x="290" y="265" fill="white" font-weight="bold" font-size="14px" pointer-events="none">UK</text>
+                </g>
+                
+                <!-- Europe de l'Est -->
+                <path d="M430 340 L500 300 L550 360 L470 380 Z" fill="#e8e8e8" stroke="#cccccc" stroke-width="2" />
+                
+                <!-- Ukraine -->
+                <g id="ukraine" class="country">
+                  <path d="M500 300 L550 360 L600 340 L570 280 Z" fill="#005BBB" stroke="#000" stroke-width="1" opacity="0.7" />
+                  <text x="540" y="320" fill="white" font-weight="bold" font-size="14px" pointer-events="none">UA</text>
+                </g>
+                
+                <!-- Russie -->
+                <g id="russia" class="country">
+                  <path d="M570 280 L600 340 L700 320 L750 200 L650 180 L600 220 Z" fill="#D52B1E" stroke="#000" stroke-width="1" opacity="0.7" />
+                  <text x="650" y="250" fill="white" font-weight="bold" font-size="14px" pointer-events="none">RU</text>
+                </g>
+                
+                <!-- Chine -->
+                <g id="china" class="country">
+                  <path d="M700 320 L750 400 L730 480 L650 450 L630 380 Z" fill="#DE2910" stroke="#000" stroke-width="1" opacity="0.7" />
+                  <text x="680" y="400" fill="white" font-weight="bold" font-size="14px" pointer-events="none">CN</text>
+                </g>
+                
+                <!-- Mer -->
+                <path d="M200 100 Q400 50 600 100 Q700 200 750 350 Q650 500 500 550 Q300 530 150 450 Q100 300 200 100 Z" fill="none" stroke="#0099ff" stroke-width="40" opacity="0.2" />
+              </svg>
+            </div>
+          </div>
+          
+          <div id="country-details" class="country-details">
+            <!-- Message initial avant la sélection d'un pays -->
+            <h3 class="country-title">Sélectionnez un pays</h3>
+            <p>Cliquez sur un pays sur la carte pour voir sa situation actuelle.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="info-panel">
+      <div class="card current-player-card">
+        <h2 class="events-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+          Tour de: <span id="current-player-desc">Premier Ministre Britannique</span>
+        </h2>
+        <p style="color: #64748b;">
+          Gérez les crises internationales et prenez des décisions stratégiques pour votre pays.
+        </p>
+      </div>
+      
+      <div class="card events-card">
+        <h2 class="events-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          Événements récents
+        </h2>
+        <div class="events-list-container">
+          <div id="events-list" class="events-list">
+            <div class="event-item recent">
+              <p class="event-text">La tension monte à la frontière russo-ukrainienne. Des mouvements de troupes sont signalés.</p>
+              <span class="recent-tag">Événement le plus récent</span>
+            </div>
+            <div class="event-item">
+              <p class="event-text">Le Royaume-Uni cherche de nouveaux partenaires commerciaux après le Brexit.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="action-btn-container">
+    <button id="action-btn" class="btn btn-blue btn-lg">Premier Ministre Britannique - Choisir une action</button>
+  </div>
+  
+  <div id="choices-modal" class="overlay hidden">
+    <div class="modal">
+      <h2 id="modal-title" class="modal-title">Premier Ministre Britannique - Choisissez votre action</h2>
+      <div>
+        <p class="modal-desc">Chaque décision aura un impact sur la situation mondiale. Choisissez judicieusement.</p>
+      </div>
+      <div id="choices-list" class="choices-list">
+        <!-- Les choix seront insérés ici dynamiquement -->
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Définition des données du jeu
+const gameData = {
+  round: 1,
+  currentPlayer: 0,
+  selectedCountry: null,
+  
+  players: [
+    { id: 0, name: "Premier Ministre Britannique", country: "uk", color: "#1d70b8" },
+    { id: 1, name: "Président Français", country: "france", color: "#002654" },
+    { id: 2, name: "Chancelier Allemand", country: "germany", color: "#FFCC00" },
+    { id: 3, name: "Président Ukrainien", country: "ukraine", color: "#005BBB" },
+    { id: 4, name: "Président Russe", country: "russia", color: "#D52B1E" },
+    { id: 5, name: "Président Chinois", country: "china", color: "#DE2910" }
+  ],
+  
+  gameState: {
+    uk: { stability: 70, economy: 65, militaryPower: 60, internationalStanding: 75 },
+    france: { stability: 65, economy: 70, militaryPower: 65, internationalStanding: 80 },
+    germany: { stability: 75, economy: 80, militaryPower: 55, internationalStanding: 85 },
+    ukraine: { stability: 40, economy: 30, militaryPower: 50, internationalStanding: 70 },
+    russia: { stability: 60, economy: 50, militaryPower: 85, internationalStanding: 40 },
+    china: { stability: 80, economy: 90, militaryPower: 90, internationalStanding: 65 }
+  },
+  
+  events: [
+    "La tension monte à la frontière russo-ukrainienne. Des mouvements de troupes sont signalés.",
+    "Le Royaume-Uni cherche de nouveaux partenaires commerciaux après le Brexit."
+  ]
+};
+
+// Utilitaires
+function getStatColor(value) {
+  if (value >= 80) return "stat-value-high";
+  if (value >= 60) return "stat-value-mid-high";
+  if (value >= 40) return "stat-value-mid-low";
+  return "stat-value-low";
+}
+
+function showNotification(message, duration = 3000) {
+  const notificationArea = document.getElementById('notification-area');
+  const notificationEl = document.createElement('div');
+  notificationEl.className = 'notification';
+  notificationEl.innerHTML = `
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="16" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12.01" y2="8"></line>
+    </svg>
+    <p>${message}</p>
+  `;
+  
+  notificationArea.appendChild(notificationEl);
+  
+  setTimeout(() => {
+    notificationEl.style.opacity = '0';
+    notificationEl.style.transition = 'opacity 0.5s';
+    setTimeout(() => {
+      notificationArea.removeChild(notificationEl);
+    }, 500);
+  }, duration);
+}
+
+// Fonctions pour gérer les pays sur la carte
+function showCountryDetails(country) {
+  console.log(`Affichage des détails pour: ${country}`);
+  gameData.selectedCountry = country;
+  
+  const countryDetailsEl = document.getElementById('country-details');
+  if (!countryDetailsEl) {
+    console.error("Élément country-details non trouvé");
+    return;
+  }
+  
+  const countryData = gameData.gameState[country];
+  if (!countryData) {
+    console.error(`Données non trouvées pour le pays: ${country}`);
+    countryDetailsEl.innerHTML = `
+      <h3 class="country-title">${country.toUpperCase()} - Erreur</h3>
+      <p>Impossible de charger les données pour ce pays.</p>
+    `;
+    return;
+  }
+  
+  countryDetailsEl.innerHTML = `
+    <h3 class="country-title">${country.toUpperCase()} - Situation actuelle</h3>
+    <div class="stats-grid">
+      <div>
+        <div class="stat-item">
+          <span class="stat-label">Stabilité:</span> 
+          <span class="${getStatColor(countryData.stability)}"> ${countryData.stability}%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Économie:</span> 
+          <span class="${getStatColor(countryData.economy)}"> ${countryData.economy}%</span>
+        </div>
+      </div>
+      <div>
+        <div class="stat-item">
+          <span class="stat-label">Puissance militaire:</span> 
+          <span class="${getStatColor(countryData.militaryPower)}"> ${countryData.militaryPower}%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Position internationale:</span> 
+          <span class="${getStatColor(countryData.internationalStanding)}"> ${countryData.internationalStanding}%</span>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  showNotification(`Informations sur ${country.toUpperCase()} affichées`, 2000);
+}
+
+// Générer les choix pour le joueur actuel
+function generateChoices(player) {
+  const country = player.country;
+  let choices = [];
+  
+  switch (country) {
+    case "uk":
+      choices = [
+        { id: 1, text: "Négocier de nouveaux accords commerciaux avec l'UE", effect: "Améliore l'économie, réduit les tensions" },
+        { id: 2, text: "Renforcer les liens militaires avec l'OTAN", effect: "Augmente la puissance militaire, peut irriter la Russie" },
+        { id: 3, text: "Soutenir militairement l'Ukraine", effect: "Améliore les relations avec l'Ukraine, détériore celles avec la Russie" },
+        { id: 4, text: "Développer des liens économiques avec la Chine", effect: "Améliore l'économie, peut compliquer les relations avec les alliés occidentaux" }
+      ];
+      break;
+    case "france":
+      choices = [
+        { id: 1, text: "Proposer une initiative diplomatique européenne", effect: "Améliore le statut international, peut réduire les tensions" },
+        { id: 2, text: "Renforcer la présence militaire aux frontières de l'UE", effect: "Augmente la sécurité, mais coûte des ressources économiques" },
+        { id: 3, text: "Développer une stratégie énergétique indépendante", effect: "Réduit la dépendance au gaz russe, mais coûteux à court terme" },
+        { id: 4, text: "Médier entre la Russie et l'Ukraine", effect: "Peut améliorer le statut diplomatique, mais risqué" }
+      ];
+      break;
+    case "germany":
+      choices = [
+        { id: 1, text: "Augmenter l'aide économique à l'Ukraine", effect: "Soutient l'Ukraine, coûte des ressources" },
+        { id: 2, text: "Suspendre Nord Stream 2", effect: "Fait pression sur la Russie, mais augmente les coûts énergétiques" },
+        { id: 3, text: "Augmenter le budget de défense", effect: "Renforce la sécurité, mais impacte l'économie" },
+        { id: 4, text: "Proposer un nouveau cadre de dialogue avec la Russie", effect: "Peut réduire les tensions, mais risque de froisser les alliés" }
+      ];
+      break;
+    case "ukraine":
+      choices = [
+        { id: 1, text: "Demander plus de soutien militaire occidental", effect: "Peut renforcer la défense, mais irrite davantage la Russie" },
+        { id: 2, text: "Proposer des négociations directes avec la Russie", effect: "Peut réduire les tensions, mais risqué politiquement" },
+        { id: 3, text: "Accélérer les réformes pour l'adhésion à l'UE", effect: "Améliore les relations avec l'Ouest, mais processus long" },
+        { id: 4, text: "Mobiliser plus de troupes aux frontières", effect: "Renforce la défense, mais augmente les tensions" }
+      ];
+      break;
+    case "russia":
+      choices = [
+        { id: 1, text: "Augmenter la pression militaire sur l'Ukraine", effect: "Montre la force, mais détériore les relations internationales" },
+        { id: 2, text: "Proposer un accord sur le gaz avec l'Europe", effect: "Améliore l'économie et peut créer des divisions en Europe" },
+        { id: 3, text: "Renforcer l'alliance avec la Chine", effect: "Contrebalance l'isolement occidental, mais crée une dépendance" },
+        { id: 4, text: "Lancer une campagne d'influence dans les pays voisins", effect: "Étend l'influence, mais risque d'être détectée" }
+      ];
+      break;
+    case "china":
+      choices = [
+        { id: 1, text: "Proposer une médiation dans le conflit ukrainien", effect: "Améliore l'image internationale, position d'influence" },
+        { id: 2, text: "Augmenter les investissements en Europe de l'Est", effect: "Développe l'influence économique, mais peut inquiéter l'UE" },
+        { id: 3, text: "Signer de nouveaux accords commerciaux avec la Russie", effect: "Renforce l'alliance, mais peut provoquer des sanctions" },
+        { id: 4, text: "Lancer une initiative diplomatique multilatérale", effect: "Améliore le statut international, mais résultats incertains" }
+      ];
+      break;
+    default:
+      choices = [
+        { id: 1, text: "Option par défaut 1", effect: "Effet par défaut" },
+        { id: 2, text: "Option par défaut 2", effect: "Effet par défaut" }
+      ];
+  }
+  
+  return choices;
+}
+
+// Fonction pour mettre à jour l'interface avec le joueur actuel
+function updateCurrentPlayer() {
+  const player = gameData.players[gameData.currentPlayer];
+  document.getElementById('current-player-name').textContent = player.name;
+  document.getElementById('current-player-desc').textContent = player.name;
+  document.getElementById('action-btn').textContent = `${player.name} - Choisir une action`;
+  document.getElementById('modal-title').textContent = `${player.name} - Choisissez votre action`;
+}
+
+// Afficher les choix dans la modale
+function showChoicesModal() {
+  const player = gameData.players[gameData.currentPlayer];
+  const choices = generateChoices(player);
+  const choicesListEl = document.getElementById('choices-list');
+  choicesListEl.innerHTML = '';
+  
+  choices.forEach(choice => {
+    const choiceBtn = document.createElement('button');
+    choiceBtn.className = 'choice-btn';
+    choiceBtn.innerHTML = `
+      <span class="choice-text">${choice.text}</span>
+      <span class="choice-effect">${choice.effect}</span>
+    `;
+    choiceBtn.addEventListener('click', () => handleChoiceSelection(choice));
+    choicesListEl.appendChild(choiceBtn);
+  });
+  
+  document.getElementById('choices-modal').classList.remove('hidden');
+}
+
+// Gérer la sélection d'un choix
+function handleChoiceSelection(choice) {
+  console.log(`Choix sélectionné: ${choice.id} - ${choice.text}`);
+  
+  // Simuler des effets aléatoires pour la démonstration
+  const player = gameData.players[gameData.currentPlayer];
+  const country = player.country;
+  const countryData = gameData.gameState[country];
+  
+  // Appliquer des changements aléatoires (pour la démo)
+  const stabilityChange = Math.floor(Math.random() * 11) - 5; // -5 à +5
+  const economyChange = Math.floor(Math.random() * 11) - 5;
+  const militaryChange = Math.floor(Math.random() * 11) - 5;
+  const standingChange = Math.floor(Math.random() * 11) - 5;
+  
+  // Mettre à jour les statistiques du pays
+  countryData.stability = Math.max(0, Math.min(100, countryData.stability + stabilityChange));
+  countryData.economy = Math.max(0, Math.min(100, countryData.economy + economyChange));
+  countryData.militaryPower = Math.max(0, Math.min(100, countryData.militaryPower + militaryChange));
+  countryData.internationalStanding = Math.max(0, Math.min(100, countryData.internationalStanding + standingChange));
+  
+  // Ajouter l'événement
+  const eventText = `${player.name} a décidé de ${choice.text.toLowerCase()}.`;
+  gameData.events.unshift(eventText);
+  updateEventsLog();
+  
+  // Fermer la modale
+  document.getElementById('choices-modal').classList.add('hidden');
+  
+  // Si le pays actuellement sélectionné est celui qui a été modifié, mettre à jour les détails affichés
+  if (gameData.selectedCountry === country) {
+    showCountryDetails(country);
+  }
+  
+  // Montrer une notification
+  showNotification(`Action effectuée: ${choice.text}`, 3000);
+  
+  // Passer au joueur suivant
+  nextPlayer();
+}
+
+// Passer au joueur suivant
+function nextPlayer() {
+  gameData.currentPlayer = (gameData.currentPlayer + 1) % gameData.players.length;
+  
+  // Si on est revenu au premier joueur, augmenter le nombre de tours
+  if (gameData.currentPlayer === 0) {
+    gameData.round++;
+    document.getElementById('round-number').textContent = gameData.round;
+    
+    // Générer un nouvel événement global de temps en temps
+    if (Math.random() > 0.5) {
+      const globalEvents = [
+        "Une crise économique mondiale menace les marchés financiers.",
+        "Des manifestations pro-démocratie éclatent dans plusieurs pays.",
+        "Une nouvelle pandémie inquiète l'Organisation Mondiale de la Santé.",
+        "Des négociations climatiques importantes débutent à l'ONU.",
+        "Une cyberattaque massive frappe plusieurs infrastructures critiques."
+      ];
+      
+      const randomEvent = globalEvents[Math.floor(Math.random() * globalEvents.length)];
+      gameData.events.unshift(randomEvent);
+      updateEventsLog();
+      showNotification("Un nouvel événement mondial est survenu!", 3000);
+    }
+  }
+  
+  updateCurrentPlayer();
+}
+
+// Mettre à jour le journal des événements
+function updateEventsLog() {
+  const eventsListEl = document.getElementById('events-list');
+  eventsListEl.innerHTML = '';
+  
+  gameData.events.forEach((event, index) => {
+    const eventItemEl = document.createElement('div');
+    eventItemEl.className = `event-item ${index === 0 ? 'recent' : ''}`;
+    
+    let eventHTML = `<p class="event-text">${event}</p>`;
+    if (index === 0) {
+      eventHTML += `<span class="recent-tag">Événement le plus récent</span>`;
+    }
+    
+    eventItemEl.innerHTML = eventHTML;
+    eventsListEl.appendChild(eventItemEl);
+  });
+}
+
+// Initialiser les événements de la carte
+function initMapEvents() {
+  const countries = document.querySelectorAll('.country');
+  countries.forEach(country => {
+    country.addEventListener('click', () => {
+      // Enlever la classe active de tous les pays
+      countries.forEach(c => c.classList.remove('country-active'));
+      
+      // Ajouter la classe active au pays sélectionné
+      country.classList.add('country-active');
+      
+      // Afficher les détails du pays
+      showCountryDetails(country.id);
+    });
+  });
+  
+  // Bouton d'action
+  document.getElementById('action-btn').addEventListener('click', showChoicesModal);
+  
+  // Fermer la modale en cliquant à l'extérieur
+  document.getElementById('choices-modal').addEventListener('click', (e) => {
+    if (e.target.className === 'overlay') {
+      document.getElementById('choices-modal').classList.add('hidden');
+    }
+  });
+}
+
+// Initialiser le jeu
+function initGame() {
+  updateCurrentPlayer();
+  updateEventsLog();
+  initMapEvents();
+  showNotification("Bienvenue dans Europe en Crise! Sélectionnez un pays pour voir sa situation.", 5000);
+}
+
+// Démarrer le jeu lorsque le DOM est chargé
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+</body>
+</html>
